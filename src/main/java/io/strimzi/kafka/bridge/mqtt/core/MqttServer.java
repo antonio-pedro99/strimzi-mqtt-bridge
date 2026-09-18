@@ -11,11 +11,14 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.strimzi.kafka.bridge.mqtt.MqttSslContextProvider;
 import io.strimzi.kafka.bridge.mqtt.config.BridgeConfig;
 import io.strimzi.kafka.bridge.mqtt.config.MqttConfig;
 import io.strimzi.kafka.bridge.mqtt.kafka.KafkaBridgeProducer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.net.ssl.SSLException;
 
 /**
  * Represents the MqttServer component.
@@ -27,7 +30,6 @@ public class MqttServer implements Liveness, Readiness {
     private final ServerBootstrap serverBootstrap;
     private final MqttConfig mqttConfig;
     private final KafkaBridgeProducer kafkaBridgeProducer;
-
     private ChannelFuture channelFuture;
 
     /**
@@ -46,11 +48,28 @@ public class MqttServer implements Liveness, Readiness {
         this.mqttConfig = config.getMqttConfig();
         this.kafkaBridgeProducer = new KafkaBridgeProducer(config.getKafkaConfig());
         this.serverBootstrap = new ServerBootstrap();
+        MqttSslContextProvider sslContextProvider = loadSslContextProvider();
         this.serverBootstrap.group(masterGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new MqttServerInitializer(this.kafkaBridgeProducer, config.getBridgeDefaultTopic(), this.mqttConfig.getMaxBytesMessage()))
+                .childHandler(new MqttServerInitializer(this.kafkaBridgeProducer, config, sslContextProvider))
                 .childOption(option, true);
+    }
+
+    /**
+     * Loads the SSL context once at server startup when MQTT SSL/TLS is enabled.
+     *
+     * @return the SSL context provider, or {@code null} when SSL/TLS is disabled
+     */
+    private MqttSslContextProvider loadSslContextProvider() {
+        if (!mqttConfig.getSslConfig().isEnabled()) {
+            return null;
+        }
+        try {
+            return MqttSslContextProvider.load(mqttConfig.getSslConfig());
+        } catch (SSLException e) {
+            throw new RuntimeException("Failed to load MQTT SSL context", e);
+        }
     }
 
     /**
