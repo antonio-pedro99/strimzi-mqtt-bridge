@@ -3,7 +3,7 @@
 ## 0.2.0
 
 * Use Java 21 as the runtime in the MQTT Bridge container image
-* Use `mqtt.host` and `mqtt.port` configuration properties instead of `mqtt.server.host` and `mqtt.server.port`
+* Use the correct `mqtt.host` and `mqtt.port` configuration options in sample configuration files and docs instead of incorrect `mqtt.server.host` and `mqtt.server.port`
 
 ## 0.1.0
 
