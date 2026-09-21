@@ -17,6 +17,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Provides a reusable Netty {@link SslContext} for MQTT connections.
+ * <p>
+ * The SSL context is created once when this provider is initialized and is
+ * reused for all subsequent connections. This avoids recreating the relatively
+ * expensive SSL configuration for every connection while allowing a new
+ * {@link SslHandler} to be created for each connection.
+ */
 public class MqttSslContextProvider {
     private final SslContext sslContext;
 
@@ -39,6 +47,12 @@ public class MqttSslContextProvider {
         return new MqttSslContextProvider(sslContext);
     }
 
+    /**
+     * Creates a new SSL handler for a connection.
+     *
+     * @param allocator the allocator used to create the handler
+     * @return a new SSL handler backed by the shared SSL context
+     */
     public SslHandler newHandler(ByteBufAllocator allocator) {
         return sslContext.newHandler(allocator);
     }
