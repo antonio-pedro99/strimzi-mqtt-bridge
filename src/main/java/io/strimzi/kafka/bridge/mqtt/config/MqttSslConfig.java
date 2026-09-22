@@ -149,8 +149,9 @@ public class MqttSslConfig extends AbstractConfig {
      */
     private Map<String, Object> hideSecrets() {
         Map<String, Object> configToString = new HashMap<>(this.config);
-        if (configToString.containsKey(MQTT_SSL_KEY)) {
+        if (configToString.containsKey(MQTT_SSL_KEY) || configToString.containsKey(MQTT_SSL_CERTIFICATE)) {
             configToString.put(MQTT_SSL_KEY, "[hidden]");
+            configToString.put(MQTT_SSL_CERTIFICATE, "[hidden]");
         }
         return configToString;
     }

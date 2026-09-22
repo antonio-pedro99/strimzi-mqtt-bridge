@@ -13,14 +13,11 @@ import io.strimzi.kafka.bridge.mqtt.SslTestUtils;
 import io.strimzi.kafka.bridge.mqtt.config.BridgeConfig;
 import io.strimzi.kafka.bridge.mqtt.config.MqttSslConfig;
 import io.strimzi.kafka.bridge.mqtt.kafka.KafkaBridgeProducer;
-import io.strimzi.kafka.bridge.mqtt.mapper.MappingRulesLoader;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -34,21 +31,10 @@ import static org.mockito.Mockito.mock;
  */
 public class MqttServerInitializerTest {
 
-    @BeforeAll
-    public static void beforeAll() {
-        String mappingRulesPath = Objects.requireNonNull(
-                MqttServerInitializerTest.class.getClassLoader().getResource("mapping-rules-regex.json")).getPath();
-        try {
-            MappingRulesLoader.getInstance().init(mappingRulesPath);
-        } catch (Exception e) {
-            // no-op, the mapping rules loader is already initialized
-        }
-    }
-
     @Test
     public void testPipelineWithoutSsl() {
         BridgeConfig bridgeConfig = BridgeConfig.fromMap(Map.of());
-        MqttServerInitializer initializer = new MqttServerInitializer(mock(KafkaBridgeProducer.class), bridgeConfig, null);
+        MqttServerInitializer initializer = new MqttServerInitializer(mock(KafkaBridgeProducer.class), bridgeConfig, null, List.of());
 
         EmbeddedChannel channel = new EmbeddedChannel(initializer);
         try {
@@ -71,7 +57,7 @@ public class MqttServerInitializerTest {
 
         MqttSslContextProvider sslContextProvider = MqttSslContextProvider.load(bridgeConfig.getMqttConfig().getSslConfig());
         MqttServerInitializer initializer = new MqttServerInitializer(
-                mock(KafkaBridgeProducer.class), bridgeConfig, sslContextProvider);
+                mock(KafkaBridgeProducer.class), bridgeConfig, sslContextProvider, List.of());
 
         EmbeddedChannel channel = new EmbeddedChannel(initializer);
         try {

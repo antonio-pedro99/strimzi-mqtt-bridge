@@ -12,6 +12,7 @@ import io.strimzi.kafka.bridge.mqtt.config.BridgeConfig;
 import io.strimzi.kafka.bridge.mqtt.config.MqttConfig;
 import io.strimzi.kafka.bridge.mqtt.config.MqttSslConfig;
 import io.strimzi.kafka.bridge.mqtt.core.MqttServer;
+import io.strimzi.kafka.bridge.mqtt.mapper.MappingRule;
 import io.strimzi.kafka.bridge.mqtt.mapper.MappingRulesLoader;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
@@ -23,10 +24,12 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -45,7 +48,7 @@ public class MqttSslIT {
     private static MqttServer mqttBridge;
 
     @BeforeAll
-    public static void beforeAll() {
+    public static void beforeAll() throws IOException {
         Map<String, Object> config = new HashMap<>();
         config.put(BridgeConfig.BRIDGE_ID, "my-ssl-bridge");
         config.put(MqttConfig.MQTT_HOST, "0.0.0.0");
@@ -58,15 +61,10 @@ public class MqttSslIT {
         EventLoopGroup bossGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
         EventLoopGroup workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
 
-        // prepare the mapping rules
-        String mappingRulesPath = Objects.requireNonNull(MqttSslIT.class.getClassLoader().getResource("mapping-rules-regex.json")).getPath();
-        try {
-            MappingRulesLoader.getInstance().init(mappingRulesPath);
-        } catch (Exception e) {
-            // no-op, the mapping rules loader is already initialized
-        }
+        String mappingRulesPath = Objects.requireNonNull(MqttBridgetIT.class.getClassLoader().getResource("mapping-rules-regex.json")).getPath();
+        List<MappingRule> mappingRules = MappingRulesLoader.loadRules(mappingRulesPath);
 
-        mqttBridge = new MqttServer(BridgeConfig.fromMap(config), bossGroup, workerGroup, ChannelOption.SO_KEEPALIVE);
+        mqttBridge = new MqttServer(BridgeConfig.fromMap(config), bossGroup, workerGroup, ChannelOption.SO_KEEPALIVE, mappingRules);
         mqttBridge.start();
     }
 
@@ -129,6 +127,6 @@ public class MqttSslIT {
     }
 
     private String getRandomMqttClientId() {
-        return "mqtt-ssl-client-" + new Random().nextInt(20);
+        return "mqtt-ssl-client-" + UUID.randomUUID();
     }
 }

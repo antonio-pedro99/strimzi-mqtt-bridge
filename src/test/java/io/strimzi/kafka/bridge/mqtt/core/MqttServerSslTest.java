@@ -35,7 +35,7 @@ public class MqttServerSslTest {
         EventLoopGroup workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
         try {
             assertThrows(IllegalArgumentException.class, () ->
-                    new MqttServer(BridgeConfig.fromMap(config), bossGroup, workerGroup, ChannelOption.SO_KEEPALIVE));
+                    new MqttServer(BridgeConfig.fromMap(config), bossGroup, workerGroup, ChannelOption.SO_KEEPALIVE, null));
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
@@ -56,7 +56,7 @@ public class MqttServerSslTest {
         EventLoopGroup workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
         try {
             assertThrows(IllegalArgumentException.class, () ->
-                    new MqttServer(BridgeConfig.fromMap(config), bossGroup, workerGroup, ChannelOption.SO_KEEPALIVE));
+                    new MqttServer(BridgeConfig.fromMap(config), bossGroup, workerGroup, ChannelOption.SO_KEEPALIVE, null));
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

@@ -43,7 +43,6 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Random;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
@@ -253,6 +252,6 @@ public class MqttBridgetIT {
      * Randomly generate a new client id before each test
      */
     private String getRandomMqttClientId() {
-        return "mqtt-client-" + new Random().nextInt(20);
+        return "mqtt-client-" + UUID.randomUUID();
     }
 }

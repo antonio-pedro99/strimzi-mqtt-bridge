@@ -166,7 +166,8 @@ mqtt.max.bytes.message=8092
 kafka.bootstrap.servers=localhost:9092
 ```
 
-Uncomment the `mqtt.tls.*` properties to enable TLS/SSL encryption for MQTT connections.
+Uncomment the `mqtt.ssl.*` properties to enable TLS/SSL encryption for MQTT connections.
+Enabling TLS/SSL does not automatically set the `mqtt.port` to `8883`, you need to set it manually.
 
 The following table describes the configuration properties defined above.
 
